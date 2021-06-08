@@ -1,14 +1,22 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         ::::::::             #
-#    Dockerfile                                         :+:    :+:             #
-#                                                      +:+                     #
-#    By: ikole <ikole@student.codam.nl>               +#+                      #
-#                                                    +#+                       #
-#    Created: 2020/01/15 15:03:16 by ikole         #+#    #+#                  #
-#    Updated: 2021/06/08 13:38:37 by ingmar        ########   odam.nl          #
-#                                                                              #
-# **************************************************************************** #
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *#
+#*	 																				 *#
+#*     _ (`-.              ('-. .-. .-')    .-')      ('-.  _  .-')        (`-.   	 *#
+#*    ( (OO  )           _(  OO)\  ( OO )  ( OO ).  _(  OO)( \( -O )     _(OO  )_ 	 *#
+#*   _.`     \ ,--.     (,------.;-----.\ (_)---\_)(,------.,------. ,--(_/   ,. \	 *#
+#*  (__...--'' |  |.-')  |  .---'| .-.  | /    _ |  |  .---'|   /`. '\   \   /(__/	 *#
+#*   |  /  | | |  | OO ) |  |    | '-' /_)\  :` `.  |  |    |  /  | | \   \ /   / 	 *#
+#*   |  |_.' | |  |`-' |(|  '--. | .-. `.  '..`''.)(|  '--. |  |_.' |  \   '   /, 	 *#
+#*   |  .___.'(|  '---.' |  .--' | |  \  |.-._)   \ |  .--' |  .  '.'   \     /__)	 *#
+#*   |  |      |      |  |  `---.| '--'  /\       / |  `---.|  |\  \     \   /    	 *#
+#*   `--'      `------'  `------'`------'  `-----'  `------'`--' '--'     `-'     	 *#
+#*																					 *#
+#* 									MADE BY											 *#
+#* 		—————————————————————————————————————————————————————————————————————		 *#
+#*				 Alpha_1337k       |    https://github.com/Alpha1337k				 *#
+#*				 VictorTennekes    |    https://github.com/VictorTennekes			 *#
+#*				 Kingmar	 	   |    https://github.com/K1ngmar					 *#
+#*																					 *#
+#* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *#
 
 FROM debian:buster
 
@@ -68,19 +76,19 @@ RUN mv mkcert /tmp/ && \
 
 #creating phpMyAdmin user
 RUN service mysql start && \
-	mysql -e "CREATE USER 'ikole'@'localhost' IDENTIFIED BY 'fluffy';" && \
-	mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'ikole'@'localhost';" && \
+	mysql -e "CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';" && \
+	mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'admin'@'localhost';" && \
 	mysql -e "FLUSH PRIVILEGES;"
 
 #creating database
 RUN service mysql start && \
 	mysql -e "CREATE database wordpress;" && \
-	mysql -e "GRANT ALL PRIVILEGES ON wordpress.* to 'ikole'@'localhost';" && \
+	mysql -e "GRANT ALL PRIVILEGES ON wordpress.* to 'admin'@'localhost';" && \
 	mysql -e "FLUSH PRIVILEGES;"
 
 #creating a sudo user
-RUN adduser --disabled-password -gecos "" ikole && \
-	sudo adduser ikole sudo
+RUN adduser --disabled-password -gecos "" admin && \
+	sudo adduser admin sudo
 
 #installing wordpress
 RUN wget https://wordpress.org/latest.tar.gz -P /tmp/
@@ -89,18 +97,18 @@ COPY /srcs/wordpress/wp-config.php /tmp/
 COPY /srcs/wp-cli/wp-cli.phar /tmp/
 RUN	tar xzf /tmp/latest.tar.gz --strip-components=1 -C /html/ && \
 	chmod +x /tmp/wp-cli.phar && \
-	chown ikole -R /html && \
+	chown admin -R /html && \
 	mv /tmp/wp-config.php /html/ && \
 	mv /tmp/wp-cli.phar /usr/local/bin/wp && \
 	service mysql restart && \
-	sudo -u ikole -i \
+	sudo -u admin -i \
 	wp core install \
 	--url=localhost \
 	--path=/html/ \
 	--title=Wordpress \
-	--admin_user=ikole \
-	--admin_password=fluffy \
-	--admin_email=ikole@student.codam.nl \
+	--admin_user=admin \
+	--admin_password=admin \
+	--admin_email=admin@mail.nl \
 	--skip-email && \
 	chown www-data -R /html
 
