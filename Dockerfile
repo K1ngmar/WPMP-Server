@@ -6,7 +6,7 @@
 #    By: ikole <ikole@student.codam.nl>               +#+                      #
 #                                                    +#+                       #
 #    Created: 2020/01/15 15:03:16 by ikole         #+#    #+#                  #
-#    Updated: 2021/06/08 13:05:50 by ingmar        ########   odam.nl          #
+#    Updated: 2021/06/08 13:38:37 by ingmar        ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,28 +28,35 @@ RUN apt-get install	-y \
 	php7.3-opcache \
 	php7.3-readline \
 	php-gd \
+	php-cgi \
 	php-mbstring \
 	wget \
 	libnss3-tools \
-	sudo
+	sudo \
+	make \
+	clang
 
 #installing phpMyAdmin
 RUN	wget https://files.phpmyadmin.net/phpMyAdmin/4.9.4/phpMyAdmin-4.9.4-all-languages.tar.gz
 RUN wget -O mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
 
 RUN tar -zxvf phpMyAdmin-4.9.4-all-languages.tar.gz
-RUN mv phpMyAdmin-4.9.4-all-languages /var/www/html/phpMyAdmin
+RUN mkdir html/ && \
+	mv phpMyAdmin-4.9.4-all-languages /html/phpMyAdmin
 
+#make plebserv and copy
+COPY Plebserv/ Plebserv/
+RUN	cd Plebserv && \
+	make && \
+	mv plebserv ../
 
 #copy directories
-COPY /srcs/nginx/nginx.conf /tmp/
+COPY /srcs/config/plebfig.conf .
 COPY /srcs/phpMyAdmin_config/config.inc.php /tmp/
 COPY /srcs/phpMyAdmin_config/phpMyAdmin.conf /tmp/
 
 #config files
-RUN mv /tmp/nginx.conf /etc/nginx/sites-available/default
-RUN mv /tmp/config.inc.php /var/www/html/phpMyAdmin/
-RUN mv /tmp/phpMyAdmin.conf /etc/nginx/conf.d/
+RUN mv /tmp/config.inc.php /html/phpMyAdmin/
 
 #certificate
 RUN mv mkcert /tmp/ && \
@@ -80,33 +87,30 @@ RUN wget https://wordpress.org/latest.tar.gz -P /tmp/
 
 COPY /srcs/wordpress/wp-config.php /tmp/
 COPY /srcs/wp-cli/wp-cli.phar /tmp/
-RUN	tar xzf /tmp/latest.tar.gz --strip-components=1 -C /var/www/html/ && \
+RUN	tar xzf /tmp/latest.tar.gz --strip-components=1 -C /html/ && \
 	chmod +x /tmp/wp-cli.phar && \
-	chown ikole -R /var/www && \
-	mv /tmp/wp-config.php /var/www/html/ && \
+	chown ikole -R /html && \
+	mv /tmp/wp-config.php /html/ && \
 	mv /tmp/wp-cli.phar /usr/local/bin/wp && \
 	service mysql restart && \
 	sudo -u ikole -i \
 	wp core install \
 	--url=localhost \
-	--path=/var/www/html/ \
+	--path=/html/ \
 	--title=Wordpress \
 	--admin_user=ikole \
 	--admin_password=fluffy \
 	--admin_email=ikole@student.codam.nl \
 	--skip-email && \
-	rm -rf var/www/html/index.nginx-debian.html && \
-	chmod 777 /var/www/html/wp-content/uploads/2020/01 && \
-	chown www-data -R /var/www
+	chown www-data -R /html
 
 #create tmp directory in phpMyAdmin
-RUN mkdir /var/www/html/phpMyAdmin/tmp
-RUN chmod 755 /var/www/html/phpMyAdmin/tmp
-RUN chown -R www-data:www-data /var/www/html/phpMyAdmin
+RUN mkdir /html/phpMyAdmin/tmp
+RUN chmod 755 /html/phpMyAdmin/tmp
+RUN chown -R www-data:www-data /html/phpMyAdmin
 
 EXPOSE 80
-EXPOSE 443
 
 CMD service php7.3-fpm start && \
 	service mysql start && \
-	./plebserv src/config/plebfig.conf
+	./plebserv plebfig.conf
