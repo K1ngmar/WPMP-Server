@@ -45,12 +45,12 @@ RUN apt-get install	-y \
 	clang
 
 #installing phpMyAdmin
-RUN	wget https://files.phpmyadmin.net/phpMyAdmin/4.9.4/phpMyAdmin-4.9.4-all-languages.tar.gz
+RUN	wget https://files.phpmyadmin.net/phpMyAdmin/5.0.1/phpMyAdmin-5.0.1-english.tar.gz
 RUN wget -O mkcert https://github.com/FiloSottile/mkcert/releases/download/v1.4.1/mkcert-v1.4.1-linux-amd64
 
-RUN tar -zxvf phpMyAdmin-4.9.4-all-languages.tar.gz
+RUN tar -zxvf phpMyAdmin-5.0.1-english.tar.gz
 RUN mkdir html/ && \
-	mv phpMyAdmin-4.9.4-all-languages /html/phpMyAdmin
+	mv phpMyAdmin-5.0.1-english /html/phpMyAdmin
 
 #make plebserv and copy
 COPY Plebserv/ Plebserv/
